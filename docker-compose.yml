@@ -1,0 +1,25 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:alpine3.20
+    ports:
+      - 5432:5432
+    volumes:
+      - dbdata:/var/lib/postgresql/data # 名前付きボリュームにデータを永続化させる
+    environment:                        # DB接続用環境変数設定
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_pass
+      POSTGRES_DB: dev
+    restart: always                     # 明示的にstopしていない場合にコンテナが停止した時、コンテナを再起動する
+  golang:
+    image: golang:alpine3.20
+    ports:
+      - 8080:80
+    volumes:
+      - ./src:/go/src/app               # 開発内容とコンテナ内のコードを同期させる
+    tty: true                           # コンテナの起動を持続化させるのに必要
+    command: go run /go/src/app/main.go
+    depends_on:
+      - postgres                        # goコンテナはpostgresコンテナに依存していることを明示的に指定
+volumes:                      
+  dbdata:                               # 名前付きボリュームを定義

@@ -16,7 +16,7 @@ services:
     ports:
       - 8080:80
     volumes:
-      - ./src:/go/src/app               # 開発内容とコンテナ内のコードを同期させる
+      - .:/go/src/app                   # 開発内容とコンテナ内のコードを同期させる
     tty: true                           # コンテナの起動を持続化させるのに必要
     restart: always                     # 明示的にstopしていない場合にコンテナが停止した時、コンテナを再起動する
     depends_on:

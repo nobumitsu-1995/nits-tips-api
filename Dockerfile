@@ -4,7 +4,7 @@ FROM golang:alpine3.20
 WORKDIR /go/src/app
 
 # ローカルのsrcディレクトリをコンテナ内の/appにコピー
-COPY src/ .
+COPY . .
 
 # メインアプリケーションを実行
 CMD ["go", "run", "main.go"]

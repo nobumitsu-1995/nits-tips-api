@@ -6,4 +6,5 @@ import (
 
 func main() {
 	db.NewDB()
+	db.NewIMDB()
 }

@@ -29,7 +29,7 @@ func NewDB() *gorm.DB {
 		log.Fatalln(err)
 	}
 
-	fmt.Printf("Connected Postgres PORT: %s", os.Getenv(("POSTGRES_PORT")))
+	fmt.Printf("Connected Postgres PORT: %s \n", os.Getenv(("POSTGRES_PORT")))
 	return db
 }
 

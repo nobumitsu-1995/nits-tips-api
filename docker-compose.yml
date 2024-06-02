@@ -11,6 +11,13 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     restart: always                     # 明示的にstopしていない場合にコンテナが停止した時、コンテナを再起動する
+  redis:
+    image: redis:7.0.15-alpine3.20
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data                  # 名前付きボリュームにデータを永続化させる
+    restart: always                     # 明示的にstopしていない場合にコンテナが停止した時、コンテナを再起動する
   golang:
     build: .
     ports:
@@ -21,5 +28,17 @@ services:
     restart: always                     # 明示的にstopしていない場合にコンテナが停止した時、コンテナを再起動する
     depends_on:
       - postgres                        # goコンテナはpostgresコンテナに依存していることを明示的に指定
+      - redis                           # goコンテナはredisコンテナに依存していることを明示的に指定
 volumes:                      
   dbdata:                               # 名前付きボリュームを定義
+    driver: local                       # ホストマシンにボリュームデータを配置することを設定
+    driver_opts:
+      type: none                        # driverにlocalを設定したときtypeはnoneを指定する必要がある
+      device: ./volumes/postgres        # ホストマシンのこのdirにボリュームデータが配置される
+      o: bind                           # これによってコンテナマシンとホストマシン両方でボリュームデータが同期される
+  redisdata:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./volumes/redis
+      o: bind

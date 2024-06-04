@@ -7,6 +7,7 @@ import (
 
 type IReactionStampUsecase interface {
 	GetReactionStampsByArticleId(articleId string) ([]model.ReactionStampResponse, error)
+	CreateReactionStamp(reactionStamp model.ReactionStamp) (model.ReactionStampResponse, error)
 }
 
 type reactionStampUsecase struct {
@@ -34,4 +35,16 @@ func (rsu *reactionStampUsecase) GetReactionStampsByArticleId(articleId string) 
 	}
 
 	return reactionStampsResponse, nil
+}
+
+func (rsu *reactionStampUsecase) CreateReactionStamp(reactionStamp model.ReactionStamp) (model.ReactionStampResponse, error) {
+	if err := rsu.rsr.CreateReactionStamp(&reactionStamp); err != nil {
+		return model.ReactionStampResponse{}, err
+	}
+
+	reactionStampResponse := model.ReactionStampResponse{
+		ID:      reactionStamp.ID,
+		StampId: reactionStamp.StampId,
+	}
+	return reactionStampResponse, nil
 }

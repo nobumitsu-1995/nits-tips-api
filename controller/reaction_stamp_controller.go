@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"nits-tips-api/model"
 	"nits-tips-api/usecase"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -11,6 +12,7 @@ import (
 type IReactionStampController interface {
 	GetReactionStampsByArticleId(c echo.Context) error
 	CreateReactionStamp(c echo.Context) error
+	DeleteReactionStamp(c echo.Context) error
 }
 
 type reactionStampController struct {
@@ -43,4 +45,18 @@ func (rsc *reactionStampController) CreateReactionStamp(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusCreated, reactionStampResponse)
+}
+
+func (rsc *reactionStampController) DeleteReactionStamp(c echo.Context) error {
+	reactionStampId := c.Param("reactionStampId")
+	userId := c.Param("userId")
+	reactionStampIdUint, _ := strconv.ParseUint(reactionStampId, 10, 0)
+	userIdUint, _ := strconv.ParseUint(userId, 10, 0)
+
+	err := rsc.rsu.DeleteReactionStamp(uint(reactionStampIdUint), uint(userIdUint))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }

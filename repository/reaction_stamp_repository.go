@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"nits-tips-api/model"
 
 	"gorm.io/gorm"
@@ -9,6 +10,7 @@ import (
 type IReactionStampRepository interface {
 	GetReactionStampsByArticleId(reactionStamp *[]model.ReactionStamp, articleId string) error
 	CreateReactionStamp(reactionStamp *model.ReactionStamp) error
+	DeleteReactionStamp(reactionStampId uint, userId uint) error
 }
 
 type reactionStampRepository struct {
@@ -30,5 +32,18 @@ func (rsr *reactionStampRepository) CreateReactionStamp(reactionStamp *model.Rea
 	if err := rsr.db.Create(reactionStamp).Error; err != nil {
 		return err
 	}
+	return nil
+}
+
+func (rsr *reactionStampRepository) DeleteReactionStamp(reactionStampId uint, userId uint) error {
+	result := rsr.db.Where("id=? AND user_id=?", reactionStampId, userId).Delete(&model.ReactionStamp{})
+
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected < 1 {
+		return fmt.Errorf("Objectが存在しません")
+	}
+
 	return nil
 }

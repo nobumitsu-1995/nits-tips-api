@@ -12,7 +12,7 @@ func NewRouter(rsc controller.IReactionStampController) *echo.Echo {
 	rs := e.Group("/reactionStamps")
 	rs.GET("/:articleId", rsc.GetReactionStampsByArticleId)
 	rs.POST("", rsc.CreateReactionStamp)
-	rs.DELETE("/:reactionStampId/:userId", rsc.DeleteReactionStamp)
+	rs.DELETE("/:reactionStampId", rsc.DeleteReactionStamp)
 
 	return e
 }

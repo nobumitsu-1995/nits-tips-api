@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"nits-tips-api/model"
 	"nits-tips-api/usecase"
+	"os"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -13,14 +15,17 @@ type IReactionStampController interface {
 	GetReactionStampsByArticleId(c echo.Context) error
 	CreateReactionStamp(c echo.Context) error
 	DeleteReactionStamp(c echo.Context) error
+	getSessionData(c echo.Context) (model.SessionData, error)
+	setCookie(c echo.Context, sessionId string)
 }
 
 type reactionStampController struct {
 	rsu usecase.IReactionStampUsecase
+	sdu usecase.ISessionDataUsecase
 }
 
-func NewReactionStampController(rsu usecase.IReactionStampUsecase) IReactionStampController {
-	return &reactionStampController{rsu}
+func NewReactionStampController(rsu usecase.IReactionStampUsecase, sdu usecase.ISessionDataUsecase) IReactionStampController {
+	return &reactionStampController{rsu, sdu}
 }
 
 func (rsc *reactionStampController) GetReactionStampsByArticleId(c echo.Context) error {
@@ -34,11 +39,17 @@ func (rsc *reactionStampController) GetReactionStampsByArticleId(c echo.Context)
 }
 
 func (rsc *reactionStampController) CreateReactionStamp(c echo.Context) error {
+	sessionData, err := rsc.getSessionData(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	rsc.setCookie(c, sessionData.SessionId)
 
 	reactionStamp := model.ReactionStamp{}
 	if err := c.Bind(&reactionStamp); err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
+	reactionStamp.UserId = sessionData.UserId
 
 	reactionStampResponse, err := rsc.rsu.CreateReactionStamp(reactionStamp)
 	if err != nil {
@@ -49,14 +60,42 @@ func (rsc *reactionStampController) CreateReactionStamp(c echo.Context) error {
 
 func (rsc *reactionStampController) DeleteReactionStamp(c echo.Context) error {
 	reactionStampId := c.Param("reactionStampId")
-	userId := c.Param("userId")
 	reactionStampIdUint, _ := strconv.ParseUint(reactionStampId, 10, 0)
-	userIdUint, _ := strconv.ParseUint(userId, 10, 0)
-
-	err := rsc.rsu.DeleteReactionStamp(uint(reactionStampIdUint), uint(userIdUint))
+	sessionData, err := rsc.getSessionData(c)
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	rsc.setCookie(c, sessionData.SessionId)
+
+	if err := rsc.rsu.DeleteReactionStamp(uint(reactionStampIdUint), sessionData.UserId); err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.NoContent(http.StatusNoContent)
+}
+
+func (rsc *reactionStampController) getSessionData(c echo.Context) (model.SessionData, error) {
+	ctx := c.Request().Context()
+	sessionId, err := c.Cookie("sessionId")
+	if err != nil {
+		return model.SessionData{}, err
+	}
+	sessionData, err := rsc.sdu.GetSession(ctx, sessionId.Value)
+	if err != nil {
+		return model.SessionData{}, err
+	}
+	return sessionData, nil
+}
+
+func (rsc *reactionStampController) setCookie(c echo.Context, sessionId string) {
+	cookie := new(http.Cookie)
+	cookie.Name = "sessionId"
+	cookie.Value = sessionId
+	cookie.Expires = time.Now().Add(24 * time.Hour)
+	cookie.Path = "/"
+	cookie.Domain = os.Getenv("API_DOMAIN")
+	// cookie.Secure = true
+	cookie.HttpOnly = true
+	cookie.SameSite = http.SameSiteNoneMode
+	c.SetCookie(cookie)
 }

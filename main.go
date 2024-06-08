@@ -10,11 +10,15 @@ import (
 
 func main() {
 	postgres := db.NewDB()
-	db.NewIMDB()
+	redis := db.NewIMDB()
 
 	reactionStampRepository := repository.NewReactionStampRepository(postgres)
+	sessionDataRepository := repository.NewSessionDataRepository(redis)
+
 	reactionStampUsecase := usecase.NewReactionStampUsecase(reactionStampRepository)
-	reactionStampController := controller.NewReactionStampController(reactionStampUsecase)
+	sessionDataUsecase := usecase.NewSessionDataUsecase(sessionDataRepository)
+
+	reactionStampController := controller.NewReactionStampController(reactionStampUsecase, sessionDataUsecase)
 
 	e := router.NewRouter(reactionStampController)
 	e.Logger.Fatal(e.Start(":80"))

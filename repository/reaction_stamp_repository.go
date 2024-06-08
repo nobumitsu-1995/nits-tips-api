@@ -10,7 +10,7 @@ import (
 type IReactionStampRepository interface {
 	GetReactionStampsByArticleId(reactionStamp *[]model.ReactionStamp, articleId string) error
 	CreateReactionStamp(reactionStamp *model.ReactionStamp) error
-	DeleteReactionStamp(reactionStampId uint, userId uint) error
+	DeleteReactionStamp(reactionStampId uint, userId string) error
 }
 
 type reactionStampRepository struct {
@@ -35,7 +35,7 @@ func (rsr *reactionStampRepository) CreateReactionStamp(reactionStamp *model.Rea
 	return nil
 }
 
-func (rsr *reactionStampRepository) DeleteReactionStamp(reactionStampId uint, userId uint) error {
+func (rsr *reactionStampRepository) DeleteReactionStamp(reactionStampId uint, userId string) error {
 	result := rsr.db.Where("id=? AND user_id=?", reactionStampId, userId).Delete(&model.ReactionStamp{})
 
 	if result.Error != nil {

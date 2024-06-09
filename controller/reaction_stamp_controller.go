@@ -30,8 +30,13 @@ func NewReactionStampController(rsu usecase.IReactionStampUsecase, sdu usecase.I
 
 func (rsc *reactionStampController) GetReactionStampsByArticleId(c echo.Context) error {
 	articleId := c.Param("articleId")
+	sessionData, err := rsc.getSessionData(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	rsc.setCookie(c, sessionData.SessionId)
 
-	reactionStampRes, err := rsc.rsu.GetReactionStampsByArticleId(articleId)
+	reactionStampRes, err := rsc.rsu.GetReactionStampsByArticleId(articleId, sessionData.UserId)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}

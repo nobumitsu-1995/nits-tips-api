@@ -6,9 +6,11 @@ import (
 )
 
 type IReactionStampUsecase interface {
-	GetReactionStampsByArticleId(articleId string) ([]model.ReactionStampResponse, error)
+	GetReactionStampsByArticleId(articleId string, userId string) (model.ReactionStampSummaryResponse, error)
 	CreateReactionStamp(reactionStamp model.ReactionStamp) (model.ReactionStampResponse, error)
 	DeleteReactionStamp(reactionStampId uint, userId string) error
+	calcStampSummary(reactionStamps []model.ReactionStamp) []model.ReactionStampSummary
+	getStampByUserId(reactionStamps []model.ReactionStamp, userId string) model.ReactedStamp
 }
 
 type reactionStampUsecase struct {
@@ -19,20 +21,16 @@ func NewReactionStampUsecase(rsr repository.IReactionStampRepository) IReactionS
 	return &reactionStampUsecase{rsr}
 }
 
-func (rsu *reactionStampUsecase) GetReactionStampsByArticleId(articleId string) ([]model.ReactionStampResponse, error) {
+func (rsu *reactionStampUsecase) GetReactionStampsByArticleId(articleId string, userId string) (model.ReactionStampSummaryResponse, error) {
 	reactionStamps := []model.ReactionStamp{}
 
 	if err := rsu.rsr.GetReactionStampsByArticleId(&reactionStamps, articleId); err != nil {
-		return nil, err
+		return model.ReactionStampSummaryResponse{}, err
 	}
 
-	reactionStampsResponse := []model.ReactionStampResponse{}
-	for _, v := range reactionStamps {
-		rs := model.ReactionStampResponse{
-			ID:      v.ID,
-			StampId: v.StampId,
-		}
-		reactionStampsResponse = append(reactionStampsResponse, rs)
+	reactionStampsResponse := model.ReactionStampSummaryResponse{
+		ReactionStampSummary: rsu.calcStampSummary(reactionStamps),
+		ReactedStamp:         rsu.getStampByUserId(reactionStamps, userId),
 	}
 
 	return reactionStampsResponse, nil
@@ -55,4 +53,37 @@ func (rsu *reactionStampUsecase) DeleteReactionStamp(reactionStampId uint, userI
 		return err
 	}
 	return nil
+}
+
+func (rsu *reactionStampUsecase) calcStampSummary(reactionStamps []model.ReactionStamp) []model.ReactionStampSummary {
+	counts := make(map[int]int)
+
+	for _, stamp := range reactionStamps {
+		if stamp.StampId >= 1 && stamp.StampId <= 6 {
+			counts[stamp.StampId]++
+		}
+	}
+
+	var results []model.ReactionStampSummary
+
+	for i := 1; i <= 6; i++ {
+		results = append(results, model.ReactionStampSummary{
+			StampId: i,
+			Total:   counts[i],
+		})
+	}
+
+	return results
+}
+
+func (rsu *reactionStampUsecase) getStampByUserId(reactionStamps []model.ReactionStamp, userId string) model.ReactedStamp {
+	for _, stamp := range reactionStamps {
+		if stamp.UserId == userId {
+			return model.ReactedStamp{
+				ID:      stamp.ID,
+				StampId: stamp.StampId,
+			}
+		}
+	}
+	return model.ReactedStamp{}
 }

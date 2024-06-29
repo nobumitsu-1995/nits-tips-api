@@ -16,14 +16,9 @@ type ReactionStampSummary struct {
 	Total   int
 }
 
-type ReactedStamp struct {
-	ID      uint `json:"id" gorm:"primaryKey"`
-	StampId int  `json:"stamp_id" gorm:"not null"`
-}
-
 type ReactionStampSummaryResponse struct {
 	ReactionStampSummary []ReactionStampSummary
-	ReactedStamp         ReactedStamp
+	ReactedStamp         []int
 }
 
 type ReactionStampResponse struct {

@@ -3,6 +3,7 @@ package usecase
 import (
 	"nits-tips-api/model"
 	"nits-tips-api/repository"
+	"sort"
 )
 
 type IReactionStampUsecase interface {
@@ -85,5 +86,6 @@ func (rsu *reactionStampUsecase) getStampByUserId(reactionStamps []model.Reactio
 		}
 	}
 
+	sort.Ints(reactedStamps)
 	return reactedStamps
 }

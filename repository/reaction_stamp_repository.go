@@ -36,7 +36,7 @@ func (rsr *reactionStampRepository) CreateReactionStamp(reactionStamp *model.Rea
 }
 
 func (rsr *reactionStampRepository) DeleteReactionStamp(reactionStampId uint, userId string) error {
-	result := rsr.db.Where("id=? AND user_id=?", reactionStampId, userId).Delete(&model.ReactionStamp{})
+	result := rsr.db.Where("stamp_id=? AND user_id=?", reactionStampId, userId).Delete(&model.ReactionStamp{})
 
 	if result.Error != nil {
 		return result.Error

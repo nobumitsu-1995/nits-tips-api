@@ -10,7 +10,7 @@ type IReactionStampUsecase interface {
 	CreateReactionStamp(reactionStamp model.ReactionStamp) (model.ReactionStampResponse, error)
 	DeleteReactionStamp(reactionStampId uint, userId string) error
 	calcStampSummary(reactionStamps []model.ReactionStamp) []model.ReactionStampSummary
-	getStampByUserId(reactionStamps []model.ReactionStamp, userId string) model.ReactedStamp
+	getStampByUserId(reactionStamps []model.ReactionStamp, userId string) []model.ReactedStamp
 }
 
 type reactionStampUsecase struct {
@@ -76,14 +76,17 @@ func (rsu *reactionStampUsecase) calcStampSummary(reactionStamps []model.Reactio
 	return results
 }
 
-func (rsu *reactionStampUsecase) getStampByUserId(reactionStamps []model.ReactionStamp, userId string) model.ReactedStamp {
+func (rsu *reactionStampUsecase) getStampByUserId(reactionStamps []model.ReactionStamp, userId string) []model.ReactedStamp {
+	var reactedStamps []model.ReactedStamp
+
 	for _, stamp := range reactionStamps {
 		if stamp.UserId == userId {
-			return model.ReactedStamp{
+			reactedStamps = append(reactedStamps, model.ReactedStamp{
 				ID:      stamp.ID,
 				StampId: stamp.StampId,
-			}
+			})
 		}
 	}
-	return model.ReactedStamp{}
+
+	return reactedStamps
 }

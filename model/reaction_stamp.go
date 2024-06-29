@@ -23,7 +23,7 @@ type ReactedStamp struct {
 
 type ReactionStampSummaryResponse struct {
 	ReactionStampSummary []ReactionStampSummary
-	ReactedStamp         ReactedStamp
+	ReactedStamp         []ReactedStamp
 }
 
 type ReactionStampResponse struct {

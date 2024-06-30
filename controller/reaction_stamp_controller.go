@@ -96,7 +96,7 @@ func (rsc *reactionStampController) setCookie(c echo.Context, sessionId string) 
 	cookie := new(http.Cookie)
 	cookie.Name = "sessionId"
 	cookie.Value = sessionId
-	cookie.Expires = time.Now().Add(24 * time.Hour)
+	cookie.Expires = time.Now().Add(24 * time.Hour * 365)
 	cookie.Path = "/"
 	cookie.Domain = os.Getenv("API_DOMAIN")
 	// cookie.Secure = true

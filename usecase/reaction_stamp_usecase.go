@@ -80,10 +80,18 @@ func (rsu *reactionStampUsecase) calcStampSummary(reactionStamps []model.Reactio
 func (rsu *reactionStampUsecase) getStampByUserId(reactionStamps []model.ReactionStamp, userId string) []int {
 	var reactedStamps []int
 
+	if userId == "" {
+		return []int{}
+	}
+
 	for _, stamp := range reactionStamps {
 		if stamp.UserId == userId {
 			reactedStamps = append(reactedStamps, stamp.StampId)
 		}
+	}
+
+	if len(reactedStamps) <= 0 {
+		return []int{}
 	}
 
 	sort.Ints(reactedStamps)

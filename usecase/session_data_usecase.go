@@ -11,7 +11,7 @@ import (
 type ISessionDataUsecase interface {
 	GetSession(ctx context.Context, sessionId string) (model.SessionData, error)
 	createNewSession(ctx context.Context, sessionData *model.SessionData) error
-	generateUUID() (string, error)
+	GenerateUUID() (string, error)
 }
 
 type sessionDataUsecase struct {
@@ -22,7 +22,7 @@ func NewSessionDataUsecase(sdr repository.ISessionDataRepository) ISessionDataUs
 	return &sessionDataUsecase{sdr}
 }
 
-func (sdu *sessionDataUsecase) generateUUID() (string, error) {
+func (sdu *sessionDataUsecase) GenerateUUID() (string, error) {
 	uuid, err := uuid.NewV7()
 	if err != nil {
 		return "", nil
@@ -31,11 +31,11 @@ func (sdu *sessionDataUsecase) generateUUID() (string, error) {
 }
 
 func (sdu *sessionDataUsecase) createNewSession(ctx context.Context, sessionData *model.SessionData) error {
-	sessionId, err := sdu.generateUUID()
+	sessionId, err := sdu.GenerateUUID()
 	if err != nil {
 		return err
 	}
-	userId, err := sdu.generateUUID()
+	userId, err := sdu.GenerateUUID()
 	if err != nil {
 		return err
 	}

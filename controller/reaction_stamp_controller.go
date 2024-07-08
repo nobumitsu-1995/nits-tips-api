@@ -17,6 +17,7 @@ type IReactionStampController interface {
 	DeleteReactionStamp(c echo.Context) error
 	getSessionData(c echo.Context) (model.SessionData, error)
 	setCookie(c echo.Context, sessionId string)
+	getOrCreateSessionID(c echo.Context) (string, error)
 }
 
 type reactionStampController struct {
@@ -81,11 +82,13 @@ func (rsc *reactionStampController) DeleteReactionStamp(c echo.Context) error {
 
 func (rsc *reactionStampController) getSessionData(c echo.Context) (model.SessionData, error) {
 	ctx := c.Request().Context()
-	sessionId, err := c.Cookie("sessionId")
+
+	sessionId, err := rsc.getOrCreateSessionID(c)
 	if err != nil {
 		return model.SessionData{}, err
 	}
-	sessionData, err := rsc.sdu.GetSession(ctx, sessionId.Value)
+
+	sessionData, err := rsc.sdu.GetSession(ctx, sessionId)
 	if err != nil {
 		return model.SessionData{}, err
 	}
@@ -99,8 +102,27 @@ func (rsc *reactionStampController) setCookie(c echo.Context, sessionId string) 
 	cookie.Expires = time.Now().Add(24 * time.Hour * 365)
 	cookie.Path = "/"
 	cookie.Domain = os.Getenv("API_DOMAIN")
-	// cookie.Secure = true
+	cookie.Secure = true
 	cookie.HttpOnly = true
 	cookie.SameSite = http.SameSiteNoneMode
 	c.SetCookie(cookie)
+}
+
+func (rsc *reactionStampController) getOrCreateSessionID(c echo.Context) (string, error) {
+	cookie, err := c.Cookie("sessionId")
+	if err == nil {
+		return cookie.Value, nil
+	}
+
+	userId, err := rsc.sdu.GenerateUUID()
+	if err != nil {
+		return "", err
+	}
+
+	newCookie := &http.Cookie{
+		Name:  "sessionId",
+		Value: userId,
+	}
+
+	return newCookie.Value, nil
 }

@@ -15,13 +15,13 @@ func NewIMDB() *redis.Client {
 	// 接続アドレス
 	address := fmt.Sprintf(
 		"%s:%s",
-		os.Getenv(("REDIS_HOST")),
-		os.Getenv(("REDIS_PORT")),
+		os.Getenv("REDIS_HOST"),
+		os.Getenv("REDIS_PORT"),
 	)
 
 	imdb := redis.NewClient(&redis.Options{
 		Addr:     address,
-		Password: os.Getenv(("REDIS_PASSWORD")),
+		Password: os.Getenv("REDIS_PASSWORD"),
 		DB:       0,
 		PoolSize: 1000,
 	})

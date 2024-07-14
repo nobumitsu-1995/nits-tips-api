@@ -13,18 +13,8 @@ import (
 func NewDB() *gorm.DB {
 	godotenv.Load() // env変数の読み込み
 
-	// DB接続URL
-	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s",
-		os.Getenv(("POSTGRES_HOST")),
-		os.Getenv(("POSTGRES_USER")),
-		os.Getenv(("POSTGRES_PASSWORD")),
-		os.Getenv(("POSTGRES_DB")),
-		os.Getenv(("POSTGRES_PORT")),
-	)
-
 	// DBと接続
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(os.Getenv("DATABASE_URL")), &gorm.Config{})
 	if err != nil {
 		log.Fatalln(err)
 	}

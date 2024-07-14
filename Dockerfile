@@ -6,5 +6,9 @@ WORKDIR /go/src/app
 # ローカルのsrcディレクトリをコンテナ内の/appにコピー
 COPY . .
 
-# メインアプリケーションを実行
-CMD ["go", "run", "main.go"]
+# アプリケーションを実行用ファイルの設定
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# アプリケーションを実行
+ENTRYPOINT ["/entrypoint.sh"]

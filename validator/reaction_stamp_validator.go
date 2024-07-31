@@ -4,7 +4,6 @@ import (
 	"nits-tips-api/model"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
 type IReactionStampValidator interface {
@@ -28,7 +27,6 @@ func (rsv *reactionStampValidator) ReactionStampValidator(reactionStamp model.Re
 			validation.Required.Error("StampId is required"),
 			validation.Min(1).Error("StampId must be at least 1"),
 			validation.Max(6).Error("StampId must be at most 6"),
-			is.Int.Error("StampId must be an integer"),
 		),
 		validation.Field(
 			&reactionStamp.ArticleId,

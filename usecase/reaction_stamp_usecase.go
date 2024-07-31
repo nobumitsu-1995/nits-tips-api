@@ -3,6 +3,7 @@ package usecase
 import (
 	"nits-tips-api/model"
 	"nits-tips-api/repository"
+	"nits-tips-api/validator"
 	"sort"
 )
 
@@ -16,10 +17,11 @@ type IReactionStampUsecase interface {
 
 type reactionStampUsecase struct {
 	rsr repository.IReactionStampRepository
+	rsv validator.IReactionStampValidator
 }
 
-func NewReactionStampUsecase(rsr repository.IReactionStampRepository) IReactionStampUsecase {
-	return &reactionStampUsecase{rsr}
+func NewReactionStampUsecase(rsr repository.IReactionStampRepository, rsv validator.IReactionStampValidator) IReactionStampUsecase {
+	return &reactionStampUsecase{rsr, rsv}
 }
 
 func (rsu *reactionStampUsecase) GetReactionStampsByArticleId(articleId string, userId string) (model.ReactionStampSummaryResponse, error) {
@@ -38,6 +40,10 @@ func (rsu *reactionStampUsecase) GetReactionStampsByArticleId(articleId string, 
 }
 
 func (rsu *reactionStampUsecase) CreateReactionStamp(reactionStamp model.ReactionStamp) (model.ReactionStampResponse, error) {
+	if err := rsu.rsv.ReactionStampValidator(reactionStamp); err != nil {
+		return model.ReactionStampResponse{}, err
+	}
+
 	if err := rsu.rsr.CreateReactionStamp(&reactionStamp); err != nil {
 		return model.ReactionStampResponse{}, err
 	}

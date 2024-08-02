@@ -17,5 +17,14 @@ func NewSessionValidator() ISessionValidator {
 }
 
 func (sv *sessionValidator) SessionValidator(sessionData model.SessionData) error {
-	return validation.ValidateStruct(&sessionData)
+	return validation.ValidateStruct(&sessionData,
+		validation.Field(
+			&sessionData.SessionId,
+			validation.Required.Error("SessionId is required"),
+		),
+		validation.Field(
+			&sessionData.UserId,
+			validation.Required.Error("UserId is required"),
+		),
+	)
 }

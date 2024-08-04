@@ -4,6 +4,7 @@ import (
 	"context"
 	"nits-tips-api/model"
 	"nits-tips-api/repository"
+	"nits-tips-api/validator"
 
 	"github.com/google/uuid"
 )
@@ -16,10 +17,11 @@ type ISessionDataUsecase interface {
 
 type sessionDataUsecase struct {
 	sdr repository.ISessionDataRepository
+	sv  validator.ISessionValidator
 }
 
-func NewSessionDataUsecase(sdr repository.ISessionDataRepository) ISessionDataUsecase {
-	return &sessionDataUsecase{sdr}
+func NewSessionDataUsecase(sdr repository.ISessionDataRepository, sv validator.ISessionValidator) ISessionDataUsecase {
+	return &sessionDataUsecase{sdr, sv}
 }
 
 func (sdu *sessionDataUsecase) GenerateUUID() (string, error) {
@@ -42,6 +44,10 @@ func (sdu *sessionDataUsecase) createNewSession(ctx context.Context, sessionData
 
 	sessionData.SessionId = sessionId
 	sessionData.UserId = userId
+
+	if err := sdu.sv.SessionValidator(*sessionData); err != nil {
+		return err
+	}
 
 	if err = sdu.sdr.SaveSession(ctx, sessionData); err != nil {
 		return err

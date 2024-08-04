@@ -14,12 +14,13 @@ func main() {
 	redis := db.NewIMDB()
 
 	reactionStampValidator := validator.NewReactionStampValidator()
+	sessionValidator := validator.NewSessionValidator()
 
 	reactionStampRepository := repository.NewReactionStampRepository(postgres)
 	sessionDataRepository := repository.NewSessionDataRepository(redis)
 
 	reactionStampUsecase := usecase.NewReactionStampUsecase(reactionStampRepository, reactionStampValidator)
-	sessionDataUsecase := usecase.NewSessionDataUsecase(sessionDataRepository)
+	sessionDataUsecase := usecase.NewSessionDataUsecase(sessionDataRepository, sessionValidator)
 
 	reactionStampController := controller.NewReactionStampController(reactionStampUsecase, sessionDataUsecase)
 

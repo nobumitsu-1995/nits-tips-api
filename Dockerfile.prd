@@ -1,0 +1,38 @@
+# --- ビルドステージ ---
+FROM golang:alpine3.20 AS builder
+
+# 作業ディレクトリの設定
+WORKDIR /go/src/app
+
+# Goモジュールの依存関係をコピーしてダウンロード
+COPY go.mod go.sum ./
+RUN go mod download
+
+# ローカルのsrcディレクトリをコンテナ内の/appにコピー
+COPY . .
+
+# マイグレーションツールをビルド (出力先を WORKDIR 内に)
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /go/src/app/migrate ./db/migrate/migrate.go
+
+# メインアプリケーションをビルド (出力先を WORKDIR 内に)
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /go/src/app/main ./main.go
+
+# 本番用のエントリーポイントスクリプトをコピー
+COPY entrypoint.prd.sh /go/src/app/entrypoint.prd.sh
+RUN chmod +x /go/src/app/entrypoint.prd.sh
+
+# --- ランタイムステージ ---
+FROM golang:alpine3.20
+
+# 作業ディレクトリの設定
+WORKDIR /go/src/app
+
+# ビルドステージから必要なものだけコピー
+COPY --from=builder /go/src/app/migrate .
+COPY --from=builder /go/src/app/main .
+COPY --from=builder /go/src/app/entrypoint.prd.sh .
+
+EXPOSE 8080
+
+# コンテナ起動時に実行するコマンド
+ENTRYPOINT ["./entrypoint.prd.sh"]
